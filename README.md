@@ -18,6 +18,7 @@ The Counter app allows users to increment and decrement a counter value. It prov
 ### Features
 - Increment and Decrement buttons
 - Reset functionality
+- Saves to local storage
 
 ## Pomodoro Timer
 
@@ -25,6 +26,7 @@ The Pomodoro Timer app helps users manage their time using the Pomodoro Techniqu
 
 ### Features
 - Adjustable work and break durations
+- Default time is 5 minutes
 
 ### To Add
 - Notifications when sessions end
@@ -47,6 +49,7 @@ The To-Do List app allows users to create, read, update, and delete tasks. It ut
 ### Features
 - Add and remove tasks
 - Remove a completed tasks
+- Lists are added to local storage
 
 ## Technologies Used
 
