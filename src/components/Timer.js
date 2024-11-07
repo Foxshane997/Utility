@@ -9,7 +9,10 @@ const CountdownTimer = () => {
 
   const calculateRemainingTime = () => {
     const savedTime = parseInt(localStorage.getItem("remainingTime"), 10);
-    const savedSelectedTime = parseInt(localStorage.getItem("selectedTime"), 10);
+    const savedSelectedTime = parseInt(
+      localStorage.getItem("selectedTime"),
+      10
+    );
     const savedStartTime = parseInt(localStorage.getItem("startTime"), 10);
 
     if (savedTime && savedStartTime && savedSelectedTime) {
@@ -25,14 +28,17 @@ const CountdownTimer = () => {
   };
 
   useEffect(() => {
-    // Load saved time and selected time on component mount
-    const { time: initialRemainingTime, selectedTime: initialSelectedTime } = calculateRemainingTime();
-    setTime(initialRemainingTime);
-    setSelectedTime(initialSelectedTime);
-
+    const { time: initialRemainingTime, selectedTime: initialSelectedTime } =
+      calculateRemainingTime();
     if (initialRemainingTime > 0) {
+      setTime(initialRemainingTime);
       setIsRunning(true);
+    } else {
+      setTime(initialRemainingTime);
+      setSelectedTime(initialSelectedTime);
     }
+
+    return () => clearInterval(intervalRef.current);
   }, []);
 
   useEffect(() => {
@@ -51,16 +57,13 @@ const CountdownTimer = () => {
           return updatedTime;
         });
       }, 1000);
-
-      // Save the start time and selected time to localStorage
-      localStorage.setItem("remainingTime", time);
-      localStorage.setItem("selectedTime", selectedTime);
-      localStorage.setItem("startTime", Date.now());
     } else {
-      // Clear interval when isRunning is set to false
       clearInterval(intervalRef.current);
-      localStorage.setItem("remainingTime", time); // Save current time
     }
+
+    localStorage.setItem("remainingTime", time);
+    localStorage.setItem("selectedTime", selectedTime);
+    localStorage.setItem("startTime", Date.now());
 
     return () => clearInterval(intervalRef.current);
   }, [isRunning, time, selectedTime]);
@@ -104,7 +107,8 @@ const CountdownTimer = () => {
   const radius = 90;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = circumference;
-  const strokeDashoffset = ((selectedTime - time) / selectedTime) * circumference;
+  const strokeDashoffset =
+    ((selectedTime - time) / selectedTime) * circumference;
 
   return (
     <div className="timer">
