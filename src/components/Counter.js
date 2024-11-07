@@ -1,9 +1,15 @@
-import React, { useState } from "react";
-import '../assets/styles/Counter.css'
+import React, { useState, useEffect } from "react";
+import "../assets/styles/Counter.css";
 
 function Counter() {
-  let [counter, changeCounter] = useState(1);
-  window.changeCounter = changeCounter;
+  const [counter, changeCounter] = useState(() => {
+    const savedCounter = localStorage.getItem('counterValue');
+    return savedCounter ? JSON.parse(savedCounter) : 1;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('counterValue', JSON.stringify(counter));
+  }, [counter]);
 
   const handleIncrement = () => {
     changeCounter(counter + 1);
@@ -18,7 +24,6 @@ function Counter() {
       <div className="counter-container">
         <h1 className="header">The Current Number is</h1>
         <h2 className="header">{counter}</h2>
-
         <button className="button-increment" onClick={handleIncrement}>
           +1
         </button>

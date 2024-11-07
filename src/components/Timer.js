@@ -5,29 +5,65 @@ const CountdownTimer = () => {
   const [time, setTime] = useState(2400);
   const [selectedTime, setSelectedTime] = useState(2400);
   const [isRunning, setIsRunning] = useState(false);
-  const startTimeRef = useRef(null);
   const intervalRef = useRef(null);
+
+  const calculateRemainingTime = () => {
+    const savedTime = parseInt(localStorage.getItem("remainingTime"), 10);
+    const savedSelectedTime = parseInt(localStorage.getItem("selectedTime"), 10);
+    const savedStartTime = parseInt(localStorage.getItem("startTime"), 10);
+
+    if (savedTime && savedStartTime && savedSelectedTime) {
+      const elapsed = Math.floor((Date.now() - savedStartTime) / 1000);
+      const remainingTime = savedTime - elapsed;
+
+      return {
+        time: remainingTime > 0 ? remainingTime : 0,
+        selectedTime: savedSelectedTime,
+      };
+    }
+    return { time: selectedTime, selectedTime };
+  };
+
+  useEffect(() => {
+    // Load saved time and selected time on component mount
+    const { time: initialRemainingTime, selectedTime: initialSelectedTime } = calculateRemainingTime();
+    setTime(initialRemainingTime);
+    setSelectedTime(initialSelectedTime);
+
+    if (initialRemainingTime > 0) {
+      setIsRunning(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (isRunning) {
-      startTimeRef.current = Date.now();
-
       intervalRef.current = setInterval(() => {
-        const elapsedTime = Math.floor(
-          (Date.now() - startTimeRef.current) / 1000
-        );
-        const newTime = selectedTime - elapsedTime;
-        setTime(newTime >= 0 ? newTime : 0);
-
-        if (newTime <= 0) {
-          setIsRunning(false);
-          clearInterval(intervalRef.current);
-        }
+        setTime((prevTime) => {
+          const updatedTime = prevTime - 1;
+          if (updatedTime <= 0) {
+            clearInterval(intervalRef.current);
+            setIsRunning(false);
+            localStorage.removeItem("remainingTime");
+            localStorage.removeItem("startTime");
+            localStorage.removeItem("selectedTime");
+            return 0;
+          }
+          return updatedTime;
+        });
       }, 1000);
+
+      // Save the start time and selected time to localStorage
+      localStorage.setItem("remainingTime", time);
+      localStorage.setItem("selectedTime", selectedTime);
+      localStorage.setItem("startTime", Date.now());
+    } else {
+      // Clear interval when isRunning is set to false
+      clearInterval(intervalRef.current);
+      localStorage.setItem("remainingTime", time); // Save current time
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, selectedTime]);
+  }, [isRunning, time, selectedTime]);
 
   const handleTimeChange = (e) => {
     const newTime = parseInt(e.target.value) * 60;
@@ -35,6 +71,9 @@ const CountdownTimer = () => {
     setTime(newTime);
     setIsRunning(false);
     clearInterval(intervalRef.current);
+    localStorage.setItem("selectedTime", newTime);
+    localStorage.removeItem("remainingTime");
+    localStorage.removeItem("startTime");
   };
 
   const handleStart = () => {
@@ -45,14 +84,15 @@ const CountdownTimer = () => {
 
   const handleStop = () => {
     setIsRunning(false);
-    clearInterval(intervalRef.current);
   };
 
   const handleReset = () => {
     setTime(selectedTime);
     setIsRunning(false);
     clearInterval(intervalRef.current);
-    startTimeRef.current = null;
+    localStorage.setItem("remainingTime", selectedTime);
+    localStorage.setItem("selectedTime", selectedTime);
+    localStorage.setItem("startTime", Date.now());
   };
 
   const formatTime = (timeInSeconds) => {
@@ -63,17 +103,8 @@ const CountdownTimer = () => {
 
   const radius = 90;
   const circumference = 2 * Math.PI * radius;
-
-  const calculateStrokeOffset = (elapsedTime) => {
-    const timeRatio = elapsedTime / selectedTime;
-    const offset = circumference * (1 - timeRatio);
-    return offset;
-  };
-
   const strokeDasharray = circumference;
-  const strokeDashoffset = isRunning
-    ? calculateStrokeOffset(time)
-    : calculateStrokeOffset(selectedTime);
+  const strokeDashoffset = ((selectedTime - time) / selectedTime) * circumference;
 
   return (
     <div className="timer">
