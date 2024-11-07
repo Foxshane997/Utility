@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import "../assets/styles/Timer.css";
 
 const CountdownTimer = () => {
-  const [time, setTime] = useState(2400);
-  const [selectedTime, setSelectedTime] = useState(2400);
+  const defaultTimeInMinutes = 5;
+  const defaultTimeInSeconds = defaultTimeInMinutes * 60;
+
+  const [time, setTime] = useState(defaultTimeInSeconds);
+  const [selectedTime, setSelectedTime] = useState(defaultTimeInSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef(null);
 
